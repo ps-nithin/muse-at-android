@@ -19,6 +19,8 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import org.greenrobot.eventbus.EventBus;
+
 public class myFirebaseMessagingService extends FirebaseMessagingService{
     public static String currentTokenFMS="notsetfms";
 
@@ -43,6 +45,8 @@ public class myFirebaseMessagingService extends FirebaseMessagingService{
         if (message.getNotification()!=null){
             showNotification(message.getNotification().getTitle(),
                     message.getNotification().getBody());
+
+            EventBus.getDefault().post(new MessageEvent("Hello everyone!"));
         }
     }
 
@@ -56,7 +60,7 @@ public class myFirebaseMessagingService extends FirebaseMessagingService{
                 channel_id)
                 .setAutoCancel(true)
                 .setOnlyAlertOnce(true)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_small_icon)
                 .setContentIntent(pendingIntent);
         builder.setContentTitle(title)
                 .setContentText(body);

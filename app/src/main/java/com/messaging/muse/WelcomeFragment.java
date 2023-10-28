@@ -15,11 +15,15 @@ import androidx.fragment.app.Fragment;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
@@ -33,6 +37,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import kotlin.coroutines.jvm.internal.RunSuspendKt;
 
 /**
@@ -41,6 +49,26 @@ import kotlin.coroutines.jvm.internal.RunSuspendKt;
  * create an instance of this fragment.
  */
 public class WelcomeFragment extends Fragment {
+    @Override
+    public void onStop() {
+        webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    @Override
+    public void onStart() {
+        webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
+        EventBus.getDefault().register(this);
+        super.onStart();
+
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(MessageEvent event) {
+        webView.loadUrl("https://www.muse-at.com/android/login.php");
+    }
+
     public String currentTokenFragment="notsetfragment";
     myFirebaseMessagingService myFMS;
     WebView webView;
@@ -61,6 +89,14 @@ public class WelcomeFragment extends Fragment {
         webView=view.findViewById(R.id.welcome_id);
         swipeRefreshLayout=view.findViewById(R.id.refreshLayout);
         webView.getSettings().setJavaScriptEnabled(true);
+        //webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(true);
+
+
+
+        cookieManager.setAcceptThirdPartyCookies(webView, true);
+
         webView.setWebViewClient(new myWebViewClient());
         currentTokenFragment=getToken();
 
@@ -81,6 +117,19 @@ public class WelcomeFragment extends Fragment {
                 },3000);
             }
         });
+
+        webView.setOnKeyListener(new View.OnKeyListener(){
+
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    webView.loadUrl("https://www.muse-at.com/android/welcome.php");
+                    return true;
+                }
+                return true;
+            }
+
+        });
         // Inflate the layout for this fragment
         return view;
     }
@@ -97,6 +146,7 @@ public class WelcomeFragment extends Fragment {
                 SharedPreferences.Editor editor = getContext().getSharedPreferences("TOKEN_PREF", MODE_PRIVATE).edit();
                 editor.putString("token",tokenNew);
                 editor.apply();
+                webView.loadUrl("https://www.muse-at.com/android/login.php?token="+tokenNew);
                 Log.d("TOKEN", tokenNew);
             }
         });
@@ -109,6 +159,13 @@ public class WelcomeFragment extends Fragment {
         webView.loadUrl("https://www.muse-at.com/android/login.php?token="+token);
     }
     public class myWebViewClient extends WebViewClient{
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            CookieManager.getInstance().setAcceptCookie(true);
+            CookieManager.getInstance().acceptCookie();
+            CookieManager.getInstance().flush();
+        }
+
         @Override
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             view.loadUrl("file:///android_asset/no_internet.html");
