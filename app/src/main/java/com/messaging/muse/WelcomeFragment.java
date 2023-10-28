@@ -68,6 +68,10 @@ public class WelcomeFragment extends Fragment {
     public void onMessageEvent(MessageEvent event) {
         webView.loadUrl("https://www.muse-at.com/android/login.php");
     }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onTabChangedEvent(TabChangedEvent event) {
+        webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
+    }
 
     public String currentTokenFragment="notsetfragment";
     myFirebaseMessagingService myFMS;

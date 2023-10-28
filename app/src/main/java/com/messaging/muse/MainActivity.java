@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager2.setCurrentItem(tab.getPosition());
+                EventBus.getDefault().post(new TabChangedEvent("Tab changed"));
             }
 
             @Override
