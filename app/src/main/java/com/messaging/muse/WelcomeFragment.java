@@ -103,7 +103,7 @@ public class WelcomeFragment extends Fragment {
 
         webView.setWebViewClient(new myWebViewClient());
         currentTokenFragment=getToken();
-
+        webView.setVerticalScrollBarEnabled(false);
         webView.loadUrl("https://www.muse-at.com/android/splash.php");
         Log.d("TOKEN",""+currentTokenFragment);
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
