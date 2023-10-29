@@ -11,22 +11,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link OpenFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 public class OpenFragment extends Fragment {
 
+    String muse_id="fragment_default";
     SwipeRefreshLayout swipeRefreshLayoutOpen;
+    private WebView webView=null;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.fragment_open,container,false);
-        WebView webView=view.findViewById(R.id.open_webview_id);
+        webView=view.findViewById(R.id.open_webview_id);
         swipeRefreshLayoutOpen=view.findViewById(R.id.refreshLayoutOpen);
-        webView.loadUrl("https://www.muse-at.com/android/open.php");
+        MainActivity activity= (MainActivity) getActivity();
+        muse_id=activity.getMuseID();
+        webView.loadUrl("https://www.muse-at.com/android/open.php?id="+muse_id);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new myWebViewClient());
         // Inflate the layout for this fragment
@@ -38,7 +44,7 @@ public class OpenFragment extends Fragment {
                     @Override
                     public void run() {
                         swipeRefreshLayoutOpen.setRefreshing(false);
-                        webView.loadUrl("https://www.muse-at.com/android/open.php");
+                        webView.loadUrl("https://www.muse-at.com/android/open.php?id="+muse_id);
                     }
                 },3000);
             }

@@ -42,23 +42,33 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import kotlin.coroutines.jvm.internal.RunSuspendKt;
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link WelcomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class WelcomeFragment extends Fragment {
+    private CookieManager cookieManager=null;
+    private boolean is_logged_in=false;
     @Override
     public void onStop() {
-        webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
+        if(is_logged_in){
+            //Toast.makeText(getContext(),"onStop",Toast.LENGTH_SHORT).show();
+            webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
+        }
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
 
     @Override
     public void onStart() {
-        webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
+        String cookie=getCookie("https://www.muse-at.com/android/","loggedin");
+        if(cookie.equals("1")) {
+            //Toast.makeText(getContext(),"Logged in.", Toast.LENGTH_SHORT).show();
+            is_logged_in=true;
+        }else if (cookie.equals("0")){
+            //Toast.makeText(getContext(),"Not logged in.",Toast.LENGTH_SHORT).show();
+            is_logged_in=false;
+        }
+        if(is_logged_in){
+            //Toast.makeText(getContext(),"onStart",Toast.LENGTH_SHORT).show();
+            webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
+        }
         EventBus.getDefault().register(this);
         super.onStart();
 
@@ -68,11 +78,30 @@ public class WelcomeFragment extends Fragment {
     public void onMessageEvent(MessageEvent event) {
         webView.loadUrl("https://www.muse-at.com/android/login.php");
     }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onTabChangedEvent(TabChangedEvent event) {
         webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
     }
 
+    public String getCookie(String siteName,String cookieName) {
+        String CookieValue = "";
+
+        cookieManager = CookieManager.getInstance();
+        String cookies = cookieManager.getCookie(siteName);
+        if (cookies==null){
+            return CookieValue;
+        }
+        String[] temp=cookies.split(";");
+        for (String ar1 : temp ){
+            if(ar1.contains(cookieName)){
+                String[] temp1=ar1.split("=");
+                CookieValue = temp1[1];
+                break;
+            }
+        }
+        return CookieValue;
+    }
     public String currentTokenFragment="notsetfragment";
     myFirebaseMessagingService myFMS;
     WebView webView;
@@ -94,7 +123,7 @@ public class WelcomeFragment extends Fragment {
         swipeRefreshLayout=view.findViewById(R.id.refreshLayout);
         webView.getSettings().setJavaScriptEnabled(true);
         //webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
-        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
 
 
@@ -134,6 +163,18 @@ public class WelcomeFragment extends Fragment {
             }
 
         });
+        String cookie=getCookie("https://www.muse-at.com/android/","loggedin");
+        if(cookie.equals("1")) {
+            //Toast.makeText(getContext(),"Logged in.", Toast.LENGTH_SHORT).show();
+            is_logged_in=true;
+        }else if (cookie.equals("0")){
+            //Toast.makeText(getContext(),"Not logged in.",Toast.LENGTH_SHORT).show();
+            is_logged_in=false;
+        }
+        if(is_logged_in){
+            //Toast.makeText(getContext(),"Redirecting...",Toast.LENGTH_SHORT).show();
+            webView.loadUrl("https://www.muse-at.com/android/login.php?exit=1");
+        }
         // Inflate the layout for this fragment
         return view;
     }
@@ -159,9 +200,7 @@ public class WelcomeFragment extends Fragment {
         SharedPreferences prefs=getContext().getSharedPreferences("TOKEN_PREF",MODE_PRIVATE);
         return prefs.getString("token","notfound");
     }
-    public void updateURL(String token){
-        webView.loadUrl("https://www.muse-at.com/android/login.php?token="+token);
-    }
+
     public class myWebViewClient extends WebViewClient{
         @Override
         public void onPageFinished(WebView view, String url) {

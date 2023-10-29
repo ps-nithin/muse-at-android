@@ -9,7 +9,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.Manifest;
@@ -22,8 +24,12 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
     public String currentTokenMainActivity="notset";
+    public String muse_id="";
 
     private final ActivityResultLauncher<String> requestPermissionLauncher=
             registerForActivityResult(new ActivityResultContracts.RequestPermission(),isGranted ->{
@@ -44,7 +50,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
+    public String getMuseID(){
+        return this.muse_id;
+    }
     TabLayout tabLayout;
     ViewPager2 viewPager2;
     
@@ -96,5 +104,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         askNotificationPermission();
+        // ATTENTION: This was auto-generated to handle app links.
+        Intent appLinkIntent = getIntent();
+        String appLinkAction = appLinkIntent.getAction();
+        Uri appLinkData = appLinkIntent.getData();
+        if(appLinkData!=null) {
+            String temp_muse_id=appLinkData.getQueryParameter("id");
+            if(temp_muse_id==null){
+                String[] str_list= appLinkData.toString().split("@");
+                muse_id=str_list[str_list.length-1];
+            }else{
+                muse_id=temp_muse_id;
+            }
+            viewPager2.setCurrentItem(1);
+        }
     }
 }
